@@ -1,9 +1,19 @@
 import os
 import discord
+import requests
+import json
 
-TOKEN=os.getenv('TOKEN')
+# define constants
+TOKEN = os.getenv('TOKEN')
+QUOTE_PROVIDER_URL = os.getenv('QUOTE_PROVIDER_URL')
 
-client=discord.Client()
+def get_quote():
+  response = requests.get(QUOTE_PROVIDER_URL)
+  json_data = json.loads(response.text)
+  quote = json_data[0]['q'] + ' - by '  + json_data[0]['a']
+  return(quote)
+
+client = discord.Client()
 
 @client.event
 async def on_ready():
@@ -18,5 +28,10 @@ async def on_message(message):
   if (message.content.startswith('hello')):
     await message.channel.send('Hello {0.author}'.format(message))
 
-client.run(TOKEN)
+  if (message.content.startswith('$inspire')):
+    quote = get_quote()
+    await message.channel.send(quote)
 
+
+# Run client
+client.run(TOKEN)
